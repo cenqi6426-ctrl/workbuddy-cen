@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WorkBuddy · 私人工作台</title>
+<style>
+  :root{
+    --bg:#eef6ef;--card:#ffffff;--green:#5fa777;--green-deep:#3f7d57;--green-soft:#8fd6a9;
+    --green-mint:#d7efdf;--text:#2f3e35;--text-soft:#6b7d70;--shadow:0 6px 18px rgba(63,125,87,.10);--radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,"PingFang SC","Helvetica Neue",Helvetica,"Segoe UI",Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  .wrap{display:flex;min-height:100vh;max-width:980px;margin:0 auto;}
+
+  /* 左侧导航 */
+  .sidebar{width:118px;flex-shrink:0;background:linear-gradient(180deg,var(--green) 0%,#4f9468 100%);color:#fff;padding:18px 10px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+  .brand{font-size:15px;font-weight:800;text-align:center;padding:6px 0 14px;letter-spacing:.5px;line-height:1.3;}
+  .brand small{display:block;font-size:9px;font-weight:400;opacity:.8;margin-top:2px;}
+  .nav{display:flex;flex-direction:column;gap:3px;}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:11px 9px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:600;transition:.18s;opacity:.86;}
+  .nav-item .ico{font-size:18px;}
+  .nav-item:hover{opacity:1;background:rgba(255,255,255,.12);}
+  .nav-item.active{opacity:1;background:#fff;color:var(--green-deep);box-shadow:var(--shadow);}
+  .nav-foot{margin-top:auto;font-size:10px;opacity:.7;text-align:center;line-height:1.5;padding-top:12px;}
+
+  /* 主区 */
+  .main{flex:1;padding:16px 18px 50px;min-width:0;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+  .clock{font-size:13px;color:var(--text-soft);font-variant-numeric:tabular-nums;}
+  .clock b{color:var(--green-deep);}
+  .mode{display:flex;background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;}
+  .mode div{padding:7px 12px;font-size:12px;font-weight:600;color:var(--text-soft);cursor:pointer;}
+  .mode div.on{background:var(--green);color:#fff;}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border:1px solid #eef3ee;}
+  .card h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px;}
+  .card .sub{font-size:12px;color:var(--text-soft);margin-bottom:12px;line-height:1.6;}
+
+  /* 每日激励 */
+  .motivate{background:linear-gradient(135deg,var(--green-mint),#eafaf0);border:none;}
+  .motivate .cn{font-size:17px;font-weight:700;color:var(--green-deep);line-height:1.5;}
+  .motivate .en{font-size:12.5px;color:var(--text-soft);margin-top:6px;font-style:italic;}
+
+  /* 打卡 */
+  .chk{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid #f0f4f0;}
+  .chk:first-of-type{border-top:none;}
+  .chk input{width:18px;height:18px;accent-color:var(--green);flex-shrink:0;}
+  .chk .nm{font-size:14px;font-weight:600;}
+  .chk .ic{font-size:16px;}
+  .progress{height:8px;background:var(--green-mint);border-radius:8px;overflow:hidden;margin:4px 0 12px;}
+  .progress i{display:block;height:100%;background:var(--green);width:0;transition:.4s;}
+  .prog-txt{font-size:12px;color:var(--text-soft);text-align:right;}
+
+  /* 每日计划 */
+  .plan-add{display:flex;gap:8px;margin:2px 0 12px;}
+  .plan-add input{flex:1;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;color:var(--text);font-family:inherit;background:#fbfdfb;}
+  .plan-add input:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .plan-add button{background:var(--green);color:#fff;border:none;border-radius:12px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .plan-add button:active{transform:scale(.96);}
+  .plan-item{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid #f0f4f0;}
+  .plan-item:first-of-type{border-top:none;}
+  .plan-item input{width:17px;height:17px;accent-color:var(--green);flex-shrink:0;}
+  .plan-item .pt{flex:1;font-size:13.5px;line-height:1.45;word-break:break-all;}
+  .plan-item.done .pt{text-decoration:line-through;color:var(--text-soft);}
+  .plan-item .del{color:var(--text-soft);font-size:12px;cursor:pointer;flex-shrink:0;padding:2px 5px;border-radius:8px;}
+  .plan-item .del:hover{color:#c0392b;background:var(--green-mint);}
+  .plan-empty{text-align:center;color:var(--text-soft);font-size:12px;padding:12px 0;}
+
+  .hist{font-size:11.5px;color:var(--text-soft);line-height:1.8;}
+  .hist b{color:var(--green-deep);}
+
+  /* 资源链接 */
+  .res{display:flex;flex-direction:column;gap:7px;margin:6px 0 4px;}
+  .res-row{display:flex;align-items:center;gap:8px;background:var(--green-mint);border-radius:10px;padding:6px 12px;}
+  .res-row a{display:flex;align-items:center;gap:8px;color:var(--green-deep);text-decoration:none;font-size:13px;font-weight:600;flex:1;min-width:0;word-break:break-all;padding:3px 0;}
+  .res-row a .ic{font-size:15px;flex-shrink:0;}
+  .res-row a small{font-weight:400;color:var(--text-soft);margin-left:auto;font-size:11px;flex-shrink:0;}
+  .res-row .del{color:var(--text-soft);font-size:12px;cursor:pointer;padding:2px 6px;border-radius:8px;flex-shrink:0;}
+  .res-row .del:hover{color:#c0392b;background:#fff;}
+  .res-row.hint{background:#f6faf7;border:1px dashed var(--green-soft);font-size:12px;color:var(--text-soft);padding:9px 12px;}
+  .res-add{display:flex;gap:8px;margin:2px 0 10px;}
+  .res-add input{flex:1;min-width:0;padding:9px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;font-family:inherit;background:#fbfdfb;color:var(--text);}
+  .res-add input:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .res-add button{background:var(--green);color:#fff;border:none;border-radius:12px;padding:0 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .res-add button:active{transform:scale(.96);}
+  .nm-edit{flex:1;min-width:0;border:1px solid var(--green-soft);border-radius:8px;padding:4px 8px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;}
+  .res-empty{text-align:center;color:var(--text-soft);font-size:12px;padding:10px 0;}
+
+  /* 知识库 */
+  .kb-add{display:flex;flex-direction:column;gap:8px;margin:4px 0 10px;}
+  .kb-add input,.kb-add textarea,.kb-search{width:100%;padding:9px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;font-family:inherit;background:#fbfdfb;color:var(--text);margin:0;}
+  .kb-add textarea{min-height:58px;resize:vertical;line-height:1.6;}
+  .kb-add input:focus,.kb-add textarea:focus,.kb-search:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .kb-search{margin-bottom:10px;}
+  .kb-item{border:1px solid #e5efe9;border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fbfdfb;}
+  .kb-item .kbt{font-size:13.5px;font-weight:700;color:var(--green-deep);display:flex;justify-content:space-between;gap:8px;align-items:center;}
+  .kb-item .kbt .ops{font-size:11px;color:var(--text-soft);display:flex;gap:10px;font-weight:400;flex-shrink:0;}
+  .kb-item .kbt .ops span{cursor:pointer;}
+  .kb-item .kbt .ops span:hover{color:#c0392b;}
+  .kb-item .kbd{font-size:12.5px;line-height:1.65;white-space:pre-wrap;word-break:break-all;color:var(--text);margin-top:6px;max-height:150px;overflow:auto;}
+  .kb-item .kbts{font-size:10.5px;color:var(--text-soft);margin-top:6px;}
+  .kb-e-title,.kb-e-text{width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--green-soft);font-size:13px;font-family:inherit;background:#fff;color:var(--text);}
+  .kb-e-text{min-height:80px;resize:vertical;line-height:1.6;margin-top:6px;}
+
+  /* AI 助手 */
+  .chat{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;margin:6px 0 10px;padding-right:2px;}
+  .msg{max-width:88%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.6;word-break:break-word;white-space:pre-wrap;align-self:flex-start;}
+  .msg.user{align-self:flex-end;background:var(--green);color:#fff;border-bottom-right-radius:4px;}
+  .msg.ai{background:var(--green-mint);color:var(--text);border-bottom-left-radius:4px;}
+  .msg pre{background:#f2f7f3;border-radius:8px;padding:8px;overflow:auto;font-size:12px;white-space:pre-wrap;margin:6px 0;}
+  .msg code{font-family:Consolas,monospace;font-size:12px;background:rgba(255,255,255,.55);padding:1px 4px;border-radius:4px;}
+  .msg pre code{background:none;padding:0;}
+  .msg b{color:var(--green-deep);}
+  .msg.user b{color:#fff;}
+  .chat-tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+  .chip{background:var(--green-mint);color:var(--green-deep);border:none;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
+  .chip:active{transform:scale(.96);}
+  .chat-input{display:flex;gap:8px;}
+  .chat-input input{flex:1;min-width:0;padding:9px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;font-family:inherit;background:#fbfdfb;color:var(--text);}
+  .chat-input input:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .chat-input button{background:var(--green);color:#fff;border:none;border-radius:12px;padding:0 16px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .chat-input button:active{transform:scale(.96);}
+  .chat-input button:disabled{opacity:.5;}
+  .ai-set{margin-bottom:4px;}
+  .ai-set input{width:100%;padding:9px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;font-family:inherit;background:#fbfdfb;color:var(--text);}
+  .ai-set input:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .ai-model{font-size:11.5px;color:var(--text-soft);display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+  .ai-model select{font-size:11.5px;font-family:inherit;border:1px solid #dcebe1;border-radius:8px;padding:3px 6px;color:var(--text);background:#fff;}
+  .cursor{display:inline-block;width:7px;height:13px;background:var(--green-deep);animation:blink 1s steps(1) infinite;vertical-align:-2px;margin-left:2px;}
+  @keyframes blink{50%{opacity:0;}}
+  .kb-edit{min-height:58px;max-height:240px;overflow:auto;padding:9px 12px;border-radius:12px;border:1px solid #dcebe1;font-size:13px;line-height:1.6;font-family:inherit;background:#fbfdfb;color:var(--text);word-break:break-word;}
+  .kb-edit:focus{outline:none;border-color:var(--green-soft);background:#fff;}
+  .kb-edit:empty:before{content:attr(data-ph);color:#9ab0a1;}
+  .kb-edit img,.kbd img{max-width:100%;border-radius:8px;margin:4px 0;display:block;}
+  .kb-e-text{max-height:220px;overflow:auto;}
+  .dragging{outline:2px dashed var(--green-soft);outline-offset:-4px;border-radius:14px;}
+
+  .note{width:100%;min-height:90px;border:1px solid #dcebe1;border-radius:12px;padding:11px;font-size:13px;font-family:inherit;resize:vertical;color:var(--text);margin-top:4px;}
+  .note:focus{outline:none;border-color:var(--green-soft);}
+  .btn{display:inline-block;background:var(--green);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);margin-top:10px;}
+  .btn.ghost{background:var(--card);color:var(--green-deep);border:1px solid var(--green-soft);box-shadow:none;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .mdbox{background:#f6faf7;border:1px dashed var(--green-soft);border-radius:12px;padding:12px;font-size:12px;white-space:pre-wrap;line-height:1.7;color:var(--text-soft);max-height:240px;overflow:auto;margin-top:8px;font-family:"SFMono-Regular",Consolas,monospace;}
+
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--green-deep);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.18);opacity:0;pointer-events:none;transition:.28s;z-index:99;max-width:84%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media(max-width:560px){
+    .sidebar{width:92px;padding:14px 6px;}
+    .nav-item{font-size:11.5px;gap:5px;padding:10px 6px;}
+    .brand{font-size:13px;}
+    .main{padding:14px 12px 50px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar">
+    <div class="brand" onclick="showHome()" style="cursor:pointer">WorkBuddy<small>私人工作台</small></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">绿色清新 · 宿舍可落地<br>低成本 · 冷感极简</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="clock" id="clock">—</div>
+      <div class="mode">
+        <div id="m-daily" onclick="setMode('daily')">🔄 每日重置</div>
+        <div id="m-cum" onclick="setMode('cum')">🗂️ 累积记录</div>
+      </div>
+    </div>
+
+    <div id="content"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 模块定义（顺序固定） ---------- */
+const MODULES={
+  m1:{icon:'💄',name:'化妆学习',intro:'调取飞书妆容文档，输出适配你脸型肤色发质的日常冷感妆容：实操步骤、产品方向、避坑要点、练习打卡。',
+      resources:[{label:'化妆学习知识库（飞书文档）',url:'https://my.feishu.cn/docx/DXi2dg4YcoaZOaxA7oAcKcFqn8c',ic:'📒'}]},
+  m2:{icon:'📚',name:'六级学习',intro:'聚焦英语六级备考：单词、听力、阅读、翻译写作，生成打卡清单，收纳 B站六级资源。',
+      resources:[{label:'发我「六级 B站收藏夹」链接，我直连拉取',url:'#',ic:'📺'}]},
+  m3:{icon:'🔮',name:'塔罗',intro:'客观直白理性解读，拒绝恐吓与过度鸡汤；侧重自我情绪疏导、个人成长复盘，输出复盘打卡。',
+      resources:[{label:'紫微斗数入门（B站）',url:'https://www.bilibili.com/video/BV1AvYLznE4p',ic:'📺'},{label:'星语自学（微信小程序·塔罗）',url:'#小程序://星语自学/EsgXW0cBXm6wEul',ic:'💬'}]},
+  m4:{icon:'📖',name:'阅读',intro:'对接微信读书：书单整理、文本摘抄、读书笔记、阅读打卡归档。',
+      resources:[{label:'微信读书（网页版）',url:'https://weread.qq.com',ic:'📚'}]},
+  m5:{icon:'🛠️',name:'嵌入式',intro:'51单片机、STM32、ESP32、EDA电路、C语言，小白分步讲解；收纳 B站课程，思维导图整理。',
+      resources:[
+        {label:'51单片机入门（江协科技）',url:'https://www.bilibili.com/video/BV1Mb411e7re',ic:'📺'},
+        {label:'STM32教程（keysking）',url:'https://www.bilibili.com/video/BV12v4y1y7uV',ic:'📺'},
+        {label:'Arduino入门（太极创客）',url:'https://www.bilibili.com/video/BV164411J7GE',ic:'📺'},
+        {label:'FreeRTOS（keysking）',url:'https://www.bilibili.com/video/BV1mhWqzFEzn',ic:'📺'},
+        {label:'嘉立创EDA·PCB设计',url:'https://www.bilibili.com/video/BV1At421h7Ui',ic:'📺'}]},
+  m6:{icon:'🤖',name:'AI学习',intro:'Prompt工程、AI工具调试、模型学习、自媒体AI创作；输出可复制提示词、代码片段，学习打卡记录。',
+      resources:[
+        {label:'大模型10小时体系（吴恩达机器学习）',url:'https://www.bilibili.com/video/BV1tpgA6nEZg',ic:'📺'},
+        {label:'Codex保姆级教程',url:'https://www.bilibili.com/video/BV181un6vEzb',ic:'📺'},
+        {label:'LLaMA-Factory微调Qwen',url:'https://www.bilibili.com/video/BV1Q8rYYdErf',ic:'📺'},
+        {label:'Ollama幼儿园级教程',url:'https://www.bilibili.com/video/BV1pFjxzTEd5',ic:'📺'},
+        {label:'AutoGen智能体（吴恩达）',url:'https://www.bilibili.com/video/BV1WJ4m137dk',ic:'📺'},
+        {label:'AI Agent搭建教程',url:'https://www.bilibili.com/video/BV11NNAz5EKn',ic:'📺'},
+        {label:'LangChain教程（尚硅谷）',url:'https://www.bilibili.com/video/BV1rv7A6oEeP',ic:'📺'},
+        {label:'RAG教程（吴恩达深度学习）',url:'https://www.bilibili.com/video/BV1QRbnzTEyK',ic:'📺'},
+        {label:'提示词工程（吴恩达深度学习）',url:'https://www.bilibili.com/video/BV1173jzNELG',ic:'📺'},
+        {label:'Transformer详解（李宏毅）',url:'https://www.bilibili.com/video/BV1v3411r78R',ic:'📺'}]},
+  m7:{icon:'🎞️',name:'看电影',intro:'高分片单整理、观影打卡、简短影评归档。',
+      resources:[{label:'libvio.host（你指定的影视站）',url:'https://libvio.host/',ic:'🎬'},{label:'正版免费：腾讯视频/爱奇艺/B站电影区',url:'https://www.bilibili.com/v/movie',ic:'📺'}]},
+  m8:{icon:'✍️',name:'博客随笔',intro:'INFP向内成长手账随笔，小红书简约清新文风，情绪记录，拒绝无病呻吟；灵感可存入备忘录。',
+      resources:[{label:'小红书',url:'https://www.xiaohongshu.com',ic:'🍠'}]}
+};
+const ORDER=['m1','m2','m3','m4','m5','m6','m7','m8'];
+
+/* ---------- 每日激励（按日切换） ---------- */
+const MOTIV=[
+  {cn:'把今天过好，就是最好的计划。',en:'Doing today well is the best plan.'},
+  {cn:'低成本，也能把日子过出质感。',en:'Low budget, yet a life with texture.'},
+  {cn:'进步不需要观众。',en:'Progress needs no audience.'},
+  {cn:'照顾好自己，是最高优先级。',en:'Taking care of yourself is the top priority.'},
+  {cn:'一点点来，已经很厉害了。',en:"Bit by bit, you're already doing great."},
+  {cn:'宿舍很小，世界很大。',en:'The dorm is small; the world is wide.'},
+  {cn:'允许自己慢一点。',en:'Allow yourself to slow down.'},
+  {cn:'记录，是为了更懂自己。',en:'We write to know ourselves better.'},
+  {cn:'冷一点没关系，真实最舒服。',en:"Being cool is fine; being real is comfiest."},
+  {cn:'今天也要好好吃饭。',en:'Eat well today, too.'},
+  {cn:'专注，能打败大部分焦虑。',en:'Focus beats most anxiety.'},
+  {cn:'你正在长成想要的样子。',en:"You're growing into who you mean to be."}
+];
+const motiv=MOTIV[Math.floor(Date.now()/86400000)%MOTIV.length];
+
+/* ---------- 数据逻辑：每日重置 / 累积记录 ---------- */
+const ymd=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;};
+let mode=localStorage.getItem('wb_mode')||'daily';
+let checkin=JSON.parse(localStorage.getItem('wb_checkin')||'{}');
+let plans=JSON.parse(localStorage.getItem('wb_plans')||'{}'); // { 'ymd': [{id,text,done}] }
+
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---------- 资源链接：每个板块可粘贴添加 / 删除 / 双击改名 ---------- */
+const HOME_RES=[
+  {label:'化妆学习知识库（飞书）',url:'https://my.feishu.cn/docx/DXi2dg4YcoaZOaxA7oAcKcFqn8c'},
+  {label:'B站收藏夹',url:'https://space.bilibili.com/478352014/favlist?fid=4014682114&ftype=create&ctype=21'},
+  {label:'微信读书',url:'https://weread.qq.com'},
+  {label:'小红书',url:'https://www.xiaohongshu.com'}
+];
+function getRes(key,seed){
+  const raw=localStorage.getItem(key);
+  if(raw!==null){try{const a=JSON.parse(raw);if(Array.isArray(a))return a;}catch(e){}}
+  return seed.map((r,i)=>({id:'d'+i,label:r.label,url:r.url,ic:r.ic}));
+}
+function setRes(key,list){localStorage.setItem(key,JSON.stringify(list));}
+function iconFor(u){
+  const map=[['bilibili','📺'],['feishu','📒'],['weread','📚'],['xiaohongshu','🍠'],['github','💻'],['zhihu','💡'],['youtube','📺'],['csdn','📄'],['runoob','📄'],['mooc','🎓'],['icourse','🎓'],['douban','🎬'],['iqiyi','📺'],['v.qq.com','📺'],['libvio','🎬']];
+  for(const [d,ic] of map){if(u.includes(d))return ic;}
+  return '🔗';
+}
+function parseRes(v){
+  const m=v.match(/https?:\/\/\S+/);
+  let url,label;
+  if(m){url=m[0].replace(/[，。；、）】》"'.,;:!?]+$/,'');label=v.replace(m[0],'').trim();}
+  else{
+    const dom=v.match(/^([\w-]+\.)+[a-z]{2,}(:\d+)?(\/\S*)?$/i);
+    if(dom){url='https://'+dom[0];label='';}else return null;
+  }
+  if(!label){try{label=new URL(url).hostname.replace(/^www\./,'');}catch(e){label=url;}}
+  return {url,label};
+}
+function resBlockHtml(key,seed){
+  const list=getRes(key,seed);
+  const rows=list.length?list.map(r=>{
+    if(r.type==='file'){
+      const ic=r.ic||fileIcon(r.fileName||r.label);
+      return `<div class="res-row" data-id="${r.id}">
+        <a href="javascript:void(0)" class="fopen"><span class="ic">${ic}</span><span class="nm">${esc(r.label)}</span><small>${r.fileSize?fmtSize(r.fileSize):''}</small></a>
+        <span class="del">✕</span>
+      </div>`;
+    }
+    if(r.url==='#'){
+      return `<div class="res-row hint">💬 ${esc(r.label)}（待添加链接）</div>`;
+    }
+    const ic=r.ic||iconFor(r.url);
+    return `<div class="res-row" data-id="${r.id}">
+      <a href="${esc(r.url)}" target="_blank" rel="noopener"><span class="ic">${ic}</span><span class="nm">${esc(r.label)}</span><small>打开</small></a>
+      <span class="del">✕</span>
+    </div>`;
+  }).join(''):`<div class="res-empty">还没有资源，把链接粘贴进来吧 📎</div>`;
+  return `
+    <div class="res-add">
+      <input placeholder="粘贴链接或文件（PPT/PDF），也可直接拖入文件">
+      <button>＋ 添加</button>
+    </div>
+    <div class="res">${rows}</div>`;
+}
+function rerender(){if(current)showModule(current);else render();}
+function bindResEvents(box,key,seed){
+  const addInp=box.querySelector('.res-add input');
+  const addBtn=box.querySelector('.res-add button');
+  const doAdd=()=>{
+    const v=addInp.value.trim();
+    if(!v){toast('先粘贴一条链接');return;}
+    const r=parseRes(v);
+    if(!r){toast('没识别出网址，试试「名称 链接」格式');return;}
+    const list=getRes(key,seed);
+    list.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),label:r.label,url:r.url});
+    setRes(key,list);addInp.value='';rerender();
+    toast('已添加资源 ✓');
+  };
+  addBtn.onclick=doAdd;
+  addInp.onkeydown=e=>{if(e.key==='Enter')doAdd();};
+  // 粘贴文件（在资源管理器里复制 PPT/PDF 后 Ctrl+V）
+  addInp.addEventListener('paste',e=>{
+    const items=(e.clipboardData||{}).items;
+    if(!items)return;
+    const files=[];
+    for(const it of items){if(it.kind==='file'){const f=it.getAsFile();if(f)files.push(f);}}
+    if(files.length){e.preventDefault();attachFiles(key,seed,files);}
+  });
+  // 拖入文件
+  box.addEventListener('dragover',e=>{
+    if(e.dataTransfer&&[...e.dataTransfer.types].includes('Files')){e.preventDefault();box.classList.add('dragging');}
+  });
+  box.addEventListener('dragleave',()=>box.classList.remove('dragging'));
+  box.addEventListener('drop',e=>{
+    box.classList.remove('dragging');
+    if(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files.length){
+      e.preventDefault();
+      attachFiles(key,seed,[...e.dataTransfer.files]);
+    }
+  });
+  box.querySelectorAll('.res-row[data-id]').forEach(row=>{
+    const id=row.dataset.id;
+    row.querySelector('.del').onclick=()=>{
+      const list=getRes(key,seed);
+      const it=list.find(x=>x.id===id);
+      setRes(key,list.filter(x=>x.id!==id));
+      if(it&&it.type==='file')idbDel(id);
+      rerender();toast('已删除该资源');
+    };
+    const a=row.querySelector('a');
+    if(row.querySelector('.fopen')){
+      a.onclick=e=>{e.preventDefault();openFile(id,key,seed);};
+    }
+    const lab=row.querySelector('.nm');
+    lab.title='双击改名';
+    lab.ondblclick=()=>{
+      const inp=document.createElement('input');
+      inp.className='nm-edit';inp.value=lab.textContent;
+      lab.replaceWith(inp);inp.focus();inp.select();
+      let done=false;
+      const save=()=>{if(done)return;done=true;
+        const list=getRes(key,seed);
+        const it=list.find(x=>x.id===id);
+        if(it){const nv=inp.value.trim();if(nv)it.label=nv;setRes(key,list);}
+        rerender();
+      };
+      inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();save();}else if(e.key==='Escape'){done=true;rerender();}};
+      inp.onblur=save;
+    };
+  });
+}
+
+/* ---------- 本地文件库（IndexedDB）：资源区可粘贴 / 拖入 PPT、PDF 等文件 ---------- */
+function idb(){
+  return new Promise((res,rej)=>{
+    if(!window.indexedDB){rej(new Error('no idb'));return;}
+    const r=indexedDB.open('workbuddy',1);
+    r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+function idbPut(id,blob){
+  return idb().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction('files','readwrite');
+    tx.objectStore('files').put({id,blob});
+    tx.oncomplete=()=>{db.close();res();};
+    tx.onerror=()=>{db.close();rej(tx.error);};
+  }));
+}
+function idbGet(id){
+  return idb().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction('files','readonly');
+    const q=tx.objectStore('files').get(id);
+    q.onsuccess=()=>{db.close();res(q.result?q.result.blob:null);};
+    q.onerror=()=>{db.close();rej(q.error);};
+  }));
+}
+function idbDel(id){
+  return idb().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction('files','readwrite');
+    tx.objectStore('files').delete(id);
+    tx.oncomplete=()=>{db.close();res();};
+    tx.onerror=()=>{db.close();rej(tx.error);};
+  }));
+}
+function fileIcon(name){
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  const map={ppt:'📊',pptx:'📊',pdf:'📄',doc:'📝',docx:'📝',xls:'📈',xlsx:'📈',zip:'🗜️',rar:'🗜️',md:'📝',txt:'📝'};
+  return map[ext]||'📁';
+}
+function fmtSize(n){
+  if(n<1024)return n+' B';
+  if(n<1048576)return (n/1024).toFixed(0)+' KB';
+  return (n/1048576).toFixed(1)+' MB';
+}
+function attachFiles(key,seed,fileList){
+  const MAX=20*1048576;
+  let jobs=Promise.resolve(),ok=0;
+  for(const f of fileList){
+    if(f.size>MAX){toast('⚠️ 「'+f.name+'」超过 20MB，已跳过');continue;}
+    const fid='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+    jobs=jobs.then(()=>idbPut(fid,f)).then(()=>{
+      const list=getRes(key,seed);
+      list.push({id:fid,type:'file',label:f.name,fileName:f.name,fileSize:f.size,ic:fileIcon(f.name)});
+      setRes(key,list);ok++;
+    }).catch(()=>toast('⚠️ 「'+f.name+'」存储失败（浏览器空间不足或不支持本地文件库）'));
+  }
+  jobs.then(()=>{rerender();if(ok)toast('已添加 '+ok+' 个文件 ✓');});
+}
+function openFile(id,key,seed){
+  const it=getRes(key,seed).find(x=>x.id===id);
+  if(!it){toast('未找到该文件');return;}
+  idbGet(id).then(blob=>{
+    if(!blob){toast('文件数据已不存在');return;}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.target='_blank';a.rel='noopener';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }).catch(()=>toast('读取文件失败'));
+}
+
+/* ---------- 知识库：每个板块多条笔记，支持粘贴 PPT 文字与图片 ---------- */
+function getKB(id){
+  const key='wb_kb_'+id;
+  let raw=localStorage.getItem(key);
+  if(raw===null){
+    const legacy=localStorage.getItem('wb_note_'+id);
+    const arr=[];
+    if(legacy&&legacy.trim())arr.push({id:'k'+Date.now().toString(36),title:'旧笔记（自动迁移）',text:legacy,ts:Date.now()});
+    localStorage.setItem(key,JSON.stringify(arr));
+    return arr;
+  }
+  try{const a=JSON.parse(raw);if(Array.isArray(a))return a;}catch(e){}
+  return [];
+}
+function setKB(id,arr){localStorage.setItem('wb_kb_'+id,JSON.stringify(arr));}
+function kbTextForAI(k){
+  if(k.text!==undefined)return k.text;
+  const d=document.createElement('div');d.innerHTML=(k.html||'').replace(/<br\s*\/?>/gi,'\n');
+  return d.textContent.trim();
+}
+function sanitizeHTML(h){
+  const d=document.createElement('div');d.innerHTML=h;
+  d.querySelectorAll('script,style,link,meta,iframe,object,embed').forEach(n=>n.remove());
+  d.querySelectorAll('*').forEach(n=>{
+    [...n.attributes].forEach(a=>{
+      const nm=a.name.toLowerCase(),v=(a.value||'').trim().toLowerCase();
+      if(nm.startsWith('on')||((nm==='href'||nm==='src')&&v.startsWith('javascript:')))n.removeAttribute(nm);
+    });
+  });
+  return d.innerHTML;
+}
+function insertImg(editor,url){
+  const img=document.createElement('img');img.src=url;img.alt='粘贴图片';
+  editor.focus();
+  const sel=window.getSelection();
+  if(sel&&sel.rangeCount){
+    const r=sel.getRangeAt(0);
+    r.deleteContents();r.insertNode(img);r.collapse(false);
+  }else editor.appendChild(img);
+}
+function bindImgPaste(ed){
+  ed.addEventListener('paste',e=>{
+    const items=(e.clipboardData||{}).items;
+    if(!items)return;
+    for(const it of items){
+      if(it.type&&it.type.indexOf('image')===0){
+        e.preventDefault();
+        const f=it.getAsFile();if(!f)continue;
+        const rd=new FileReader();
+        rd.onload=()=>{
+          const im=new Image();
+          im.onload=()=>{
+            let w=im.width,h=im.height;const MAX=700;
+            if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+            const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+            cv.getContext('2d').drawImage(im,0,0,w,h);
+            insertImg(ed,cv.toDataURL('image/jpeg',.8));
+          };
+          im.src=rd.result;
+        };
+        rd.readAsDataURL(f);
+        return;
+      }
+    }
+  });
+}
+function kbHtml(id){
+  const kb=getKB(id);
+  const rows=kb.length?kb.slice().sort((a,b)=>b.ts-a.ts).map(k=>{
+    const body=(k.html!==undefined?k.html:esc(k.text||'').replace(/\n/g,'<br>'));
+    return `<div class="kb-item" data-kid="${k.id}">
+      <div class="kbt"><span>${esc(k.title)}</span><span class="ops"><span data-op="edit">✏️ 编辑</span><span data-op="del">🗑 删除</span></span></div>
+      <div class="kbd">${body}</div>
+      <div class="kbts">${new Date(k.ts).toLocaleString('zh-CN')}</div>
+    </div>`;
+  }).join(''):`<div class="res-empty">知识库还是空的，先记一条吧 📝（可直接粘贴 PPT 内容）</div>`;
+  return `
+    <div class="kb-add">
+      <input id="kb-title" placeholder="标题（如：眼影配色笔记 / 六级阅读错题）" maxlength="40">
+      <div class="kb-edit" id="kb-text" contenteditable="true" data-ph="内容：笔记、摘抄、踩坑、灵感……也可以直接从 PPT / 网页复制粘贴过来（含图片）"></div>
+      <div class="row"><button class="btn" id="kb-add-btn" style="margin-top:0">＋ 存入知识库</button></div>
+    </div>
+    <input class="kb-search" id="kb-search" placeholder="🔍 搜索知识库…">
+    <div id="kb-list">${rows}</div>`;
+}
+function bindKB(c,id){
+  const doAdd=()=>{
+    const t=c.querySelector('#kb-title').value.trim();
+    const ed=c.querySelector('#kb-text');
+    const html=sanitizeHTML(ed.innerHTML);
+    const plain=(ed.textContent||'').trim();
+    if(!t&&!plain&&!ed.querySelector('img')){toast('先写点内容');return;}
+    const kb=getKB(id);
+    kb.push({id:'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),title:t||'未命名',html,ts:Date.now()});
+    setKB(id,kb);
+    if((localStorage.getItem('wb_kb_'+id)||'').length>4.2e6)toast('⚠️ 知识库接近本机存储上限（约5MB），图片多时建议精简');
+    showModule(id);toast('已存入知识库 ✓');
+  };
+  c.querySelector('#kb-add-btn').onclick=doAdd;
+  c.querySelector('#kb-text').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();doAdd();}});
+  bindImgPaste(c.querySelector('#kb-text'));
+  const search=c.querySelector('#kb-search');
+  search.oninput=()=>{
+    const q=search.value.trim().toLowerCase();
+    c.querySelectorAll('.kb-item').forEach(el=>{
+      el.style.display=(!q||el.textContent.toLowerCase().includes(q))?'':'none';
+    });
+  };
+  c.querySelectorAll('.kb-item').forEach(el=>{
+    const kid=el.dataset.kid;
+    el.querySelector('[data-op=del]').onclick=()=>{
+      setKB(id,getKB(id).filter(k=>k.id!==kid));
+      showModule(id);toast('已删除');
+    };
+    el.querySelector('[data-op=edit]').onclick=()=>{
+      const k=getKB(id).find(x=>x.id===kid);
+      if(!k)return;
+      const body=(k.html!==undefined?k.html:esc(k.text||'').replace(/\n/g,'<br>'));
+      el.innerHTML=`
+        <input class="kb-e-title" value="${esc(k.title)}" maxlength="40">
+        <div class="kb-edit kb-e-text" contenteditable="true">${body}</div>
+        <div class="row" style="margin-top:8px"><button class="btn kb-save" style="margin-top:0;padding:7px 14px">保存</button></div>`;
+      const ed=el.querySelector('.kb-e-text');
+      bindImgPaste(ed);
+      el.querySelector('.kb-save').onclick=()=>{
+        const nt=el.querySelector('.kb-e-title').value.trim();
+        const nh=sanitizeHTML(ed.innerHTML);
+        const kb=getKB(id);const it=kb.find(x=>x.id===kid);
+        if(it){it.title=nt||'未命名';it.html=nh;delete it.text;setKB(id,kb);}
+        showModule(id);toast('已保存');
+      };
+    };
+  });
+}
+
+/* ---------- AI 助手（DeepSeek，浏览器直连） ---------- */
+const DS_BASE=localStorage.getItem('wb_ds_base')||'https://api.deepseek.com';
+const QUICK={
+  '总结':'请总结我这个板块的知识库：核心内容、我的学习进展、建议的下一步。分点列出，简洁。',
+  '计划':'根据我的知识库和资源链接，帮我生成今天可执行的 3~5 条学习计划。每条一句话、可落地、带预估时长。',
+  '复习':'根据我的知识库内容出 5 道小测题（选择或简答），先出题不公布答案，最后统一给答案和讲解。'
+};
+function getChat(id){
+  const raw=localStorage.getItem('wb_chat_'+id);
+  try{const a=JSON.parse(raw||'[]');if(Array.isArray(a))return a;}catch(e){}
+  return [];
+}
+function setChat(id,arr){
+  const cap=arr.slice(-24);
+  localStorage.setItem('wb_chat_'+id,JSON.stringify(cap));
+  return cap;
+}
+function aiSystem(id){
+  const m=MODULES[id];
+  const kb=getKB(id);
+  const kbText=kb.length?kb.map(k=>`【${k.title}】\n${kbTextForAI(k)}`).join('\n\n'):'（暂无内容）';
+  const res=getRes('wb_res_'+id,m.resources).filter(r=>r.url!=='#').map(r=>`- ${r.label}：${r.url}`).join('\n')||'（暂无）';
+  return `你是「${m.name}」板块的私人学习助手，用户是学生。板块定位：${m.intro}
+请你：
+1. 优先基于下面的知识库内容回答；知识库没有的信息可以结合常识补充，但明确说明哪些来自知识库、哪些是建议。
+2. 用简体中文回答，语气温和理性，像学姐一样。
+3. 回答尽量分点、简洁，多给可执行的下一步。
+【我的知识库】
+${kbText}
+【我的资源链接】
+${res}`;
+}
+function mdLite(s){
+  let h=esc(s);
+  h=h.replace(/```([\s\S]*?)```/g,(m,c)=>`<pre><code>${c.trim()}</code></pre>`);
+  h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+  h=h.replace(/`([^`]+)`/g,'<code>$1</code>');
+  return h;
+}
+function aiHtml(id){
+  const chat=getChat(id);
+  const msgs=chat.length?chat.map(m=>`<div class="msg ${m.role==='user'?'user':'ai'}">${mdLite(m.content)}</div>`).join(''):`<div class="res-empty">问我任何关于这个板块的问题，或点下面的快捷提问 💬</div>`;
+  const hasKey=!!localStorage.getItem('wb_ds_key');
+  const keyBox=hasKey?'':`
+    <div class="ai-set">
+      <input id="ai-key" type="password" placeholder="粘贴 DeepSeek API Key（sk- 开头）">
+      <div class="sub" style="margin:6px 0 0">没有 Key？到 platform.deepseek.com 注册并充值即可。Key 仅保存在你自己的浏览器，直连 DeepSeek 官方接口。</div>
+      <button class="btn" id="ai-key-save" style="margin-top:8px">保存 Key</button>
+    </div>`;
+  const sel=localStorage.getItem('wb_ds_model')||'deepseek-chat';
+  return `${keyBox}
+    <div class="ai-model">模型
+      <select id="ai-model">
+        <option value="deepseek-chat" ${sel==='deepseek-chat'?'selected':''}>deepseek-chat（快，日常够用）</option>
+        <option value="deepseek-reasoner" ${sel==='deepseek-reasoner'?'selected':''}>deepseek-reasoner（深度思考，慢）</option>
+      </select>
+    </div>
+    <div class="chat" id="chat">${msgs}</div>
+    <div class="chat-tools">
+      <button class="chip" data-q="总结">📌 总结知识库</button>
+      <button class="chip" data-q="计划">📋 生成今日计划</button>
+      <button class="chip" data-q="复习">🧠 考考我</button>
+      <button class="chip" id="ai-clear" style="color:#c0392b">🧹 清空对话</button>
+      ${hasKey?'<button class="chip" id="ai-key-reset" style="opacity:.7">🔑 更换 Key</button>':''}
+    </div>
+    <div class="chat-input"><input id="ai-q" placeholder="向 AI 提问…（Enter 发送）"><button id="ai-send">发送</button></div>`;
+}
+async function askAI(id,q){
+  const key=localStorage.getItem('wb_ds_key');
+  if(!key){toast('先在上方保存 API Key');return;}
+  const model=localStorage.getItem('wb_ds_model')||'deepseek-chat';
+  let chat=getChat(id);
+  chat.push({role:'user',content:q});
+  const chatEl=document.getElementById('chat');
+  const empty=chatEl.querySelector('.res-empty');if(empty)empty.remove();
+  const ub=document.createElement('div');ub.className='msg user';ub.textContent=q;chatEl.appendChild(ub);
+  const ab=document.createElement('div');ab.className='msg ai';ab.textContent='思考中…';chatEl.appendChild(ab);
+  chatEl.scrollTop=chatEl.scrollHeight;
+  const send=document.getElementById('ai-send');send.disabled=true;
+  let acc='';
+  try{
+    const res=await fetch(DS_BASE+'/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model,stream:true,
+        messages:[{role:'system',content:aiSystem(id)},...chat]
+      })
+    });
+    if(!res.ok){
+      let em='请求失败（HTTP '+res.status+'）';
+      try{const j=await res.json();if(j.error&&j.error.message)em=j.error.message;}catch(e){}
+      ab.textContent='⚠️ '+em;
+      chat.pop();
+      setChat(id,chat);send.disabled=false;
+      return;
+    }
+    const reader=res.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');buf=lines.pop();
+      for(const ln of lines){
+        const s=ln.trim();
+        if(!s.startsWith('data:'))continue;
+        const d=s.slice(5).trim();
+        if(d==='[DONE]')continue;
+        try{
+          const j=JSON.parse(d);
+          const delta=j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content;
+          if(delta){acc+=delta;ab.innerHTML=mdLite(acc)+'<span class="cursor"></span>';chatEl.scrollTop=chatEl.scrollHeight;}
+        }catch(e){}
+      }
+    }
+    ab.innerHTML=mdLite(acc);
+    if(acc)chat.push({role:'assistant',content:acc});
+  }catch(e){
+    ab.textContent='⚠️ 网络错误：'+e.message+'（需联网；请确认 Key 有效）';
+    chat.pop();
+  }
+  setChat(id,chat);
+  send.disabled=false;
+  chatEl.scrollTop=chatEl.scrollHeight;
+}
+function bindAI(c,id){
+  const keySave=c.querySelector('#ai-key-save');
+  if(keySave)keySave.onclick=()=>{
+    const v=c.querySelector('#ai-key').value.trim();
+    if(!v){toast('先粘贴 Key');return;}
+    localStorage.setItem('wb_ds_key',v);
+    showModule(id);toast('Key 已保存 ✓');
+  };
+  const reset=c.querySelector('#ai-key-reset');
+  if(reset)reset.onclick=()=>{localStorage.removeItem('wb_ds_key');showModule(id);toast('已清除 Key');};
+  const clear=c.querySelector('#ai-clear');
+  if(clear)clear.onclick=()=>{localStorage.removeItem('wb_chat_'+id);showModule(id);toast('对话已清空');};
+  const sel=c.querySelector('#ai-model');
+  if(sel)sel.onchange=()=>localStorage.setItem('wb_ds_model',sel.value);
+  c.querySelectorAll('.chip[data-q]').forEach(ch=>{
+    ch.onclick=()=>askAI(id,QUICK[ch.dataset.q]);
+  });
+  const inp=c.querySelector('#ai-q');const send=c.querySelector('#ai-send');
+  const doSend=()=>{const v=inp.value.trim();if(!v)return;inp.value='';askAI(id,v);};
+  send.onclick=doSend;
+  inp.onkeydown=e=>{if(e.key==='Enter')doSend();};
+}
+
+function prune(){
+  if(mode==='daily'){
+    // 每日重置：仅保留今天
+    const t=ymd();
+    for(const k in checkin){ if(k!==t) delete checkin[k]; }
+    for(const k in plans){ if(k!==t) delete plans[k]; }
+  }
+  localStorage.setItem('wb_checkin',JSON.stringify(checkin));
+  localStorage.setItem('wb_plans',JSON.stringify(plans));
+}
+prune();
+
+/* ---------- 渲染：侧边栏 ---------- */
+const navEl=document.getElementById('nav');
+ORDER.forEach(id=>{
+  const m=MODULES[id];
+  const d=document.createElement('div');
+  d.className='nav-item';d.dataset.id=id;
+  d.innerHTML=`<span class="ico">${m.icon}</span><span>${m.name}</span>`;
+  d.onclick=()=>showModule(id);
+  navEl.appendChild(d);
+});
+
+/* ---------- 时钟 ---------- */
+function tick(){
+  const d=new Date();
+  const wk=['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  const p=n=>String(n).padStart(2,'0');
+  document.getElementById('clock').innerHTML=`<b>${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${wk}</b> ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+setInterval(tick,1000);tick();
+
+/* ---------- 模式切换 ---------- */
+function setMode(m){
+  mode=m;localStorage.setItem('wb_mode',m);prune();
+  document.getElementById('m-daily').classList.toggle('on',m==='daily');
+  document.getElementById('m-cum').classList.toggle('on',m==='cum');
+  render();
+  toast(m==='daily'?'已切换：每日重置（次日清空当日）':'已切换：累积记录（保留全部历史）');
+}
+document.getElementById('m-daily').classList.toggle('on',mode==='daily');
+document.getElementById('m-cum').classList.toggle('on',mode==='cum');
+
+/* ---------- 视图：首页 ---------- */
+function showHome(){render();}
+
+function render(){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',false));
+  const c=document.getElementById('content');
+  const t=ymd();
+  const today=checkin[t]||{};
+  let done=0;ORDER.forEach(id=>{if(today[id])done++;});
+  const pct=Math.round(done/ORDER.length*100);
+
+  let histHtml='';
+  if(mode==='cum'){
+    const dates=Object.keys(checkin).sort().reverse().slice(0,7);
+    histHtml=`<div class="hist"><b>近期记录</b><br>`+dates.map(d=>{
+      const n=ORDER.filter(id=>checkin[d]&&checkin[d][id]).length;
+      const dp=plans[d]||[];const dn=dp.filter(p=>p.done).length;
+      return `${d}：打卡 ${n}/${ORDER.length} ｜ 计划 ${dn}/${dp.length}`;
+    }).join('<br>')+`</div>`;
+  }else{
+    histHtml=`<div class="hist">当前为「每日重置」模式，仅显示今日数据；次日自动清空当日打卡与计划。</div>`;
+  }
+
+  // 今日计划
+  const tPlans=(plans[t]||[]);
+  const tDone=tPlans.filter(p=>p.done).length;
+  const tPct=tPlans.length?Math.round(tDone/tPlans.length*100):0;
+  const planListHtml=tPlans.length?tPlans.map(p=>
+    `<div class="plan-item ${p.done?'done':''}" data-pid="${p.id}">
+       <input type="checkbox" ${p.done?'checked':''}>
+       <span class="pt">${esc(p.text)}</span>
+       <span class="del">删除</span>
+     </div>`).join(''):`<div class="plan-empty">还没有计划，先加一条吧 ✍️</div>`;
+
+  let chk='';
+  ORDER.forEach(id=>{
+    const m=MODULES[id];
+    const on=today[id]?'checked':'';
+    chk+=`<label class="chk"><input type="checkbox" data-id="${id}" ${on}><span class="ic">${m.icon}</span><span class="nm">${m.name}</span></label>`;
+  });
+
+  c.innerHTML=`
+    <div class="card motivate">
+      <div class="cn">${motiv.cn}</div>
+      <div class="en">${motiv.en}</div>
+    </div>
+
+    <div class="card">
+      <h2>📋 每日计划</h2>
+      <div class="sub">把今天想落地的事列出来，做完打勾。${mode==='daily'?'（每日重置模式，次日清空）':'（累积模式，保留历史）'}</div>
+      <div class="plan-add">
+        <input id="plan-input" placeholder="如：背30个六级单词 / 画一张PCB草图" maxlength="60">
+        <button id="plan-add-btn">＋ 添加</button>
+      </div>
+      <div class="progress"><i style="width:${tPct}%"></i></div>
+      <div class="prog-txt">已完成 ${tDone}/${tPlans.length}（${tPct}%）</div>
+      <div id="plan-list">${planListHtml}</div>
+    </div>
+
+    <div class="card">
+      <h2>✅ 今日打卡</h2>
+      <div class="sub">${mode==='daily'?'模式：每日重置（次日清空）':'模式：累积记录（保留历史）'} · 点左侧菜单进入各模块</div>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      <div class="prog-txt">已完成 ${done}/${ORDER.length}（${pct}%）</div>
+      ${chk}
+    </div>
+
+    <div class="card">
+      <h2>🗓️ 记录概览</h2>
+      ${histHtml}
+    </div>
+
+    <div class="card">
+      <h2>🔗 资源导航</h2>
+      <div class="sub">常用入口，可粘贴链接添加 · 双击名称可改名</div>
+      <div id="home-res"></div>
+    </div>
+
+    <div class="card">
+      <h2>💾 数据备份</h2>
+      <div class="sub">导出全部数据（链接、知识库、AI 对话、本地文件）为一个备份文件；换设备或换浏览器时导入即可。⚠️ 备份文件里含你的 API Key，注意保管、勿外传。</div>
+      <div class="row">
+        <button class="btn" id="export-btn">⬇️ 导出备份</button>
+        <button class="btn ghost" id="import-btn">⬆️ 导入备份</button>
+        <input type="file" id="import-file" accept=".json,application/json" style="display:none">
+      </div>
+    </div>
+  `;
+
+  c.querySelectorAll('.chk input').forEach(inp=>{
+    inp.onchange=()=>{
+      const id=inp.dataset.id,t=ymd();
+      checkin[t]=checkin[t]||{};
+      checkin[t][id]=inp.checked;
+      localStorage.setItem('wb_checkin',JSON.stringify(checkin));
+      render();
+    };
+  });
+
+  // 每日计划：添加
+  const planInput=document.getElementById('plan-input');
+  const addBtn=document.getElementById('plan-add-btn');
+  if(planInput&&addBtn){
+    const doAdd=()=>{
+      const v=planInput.value.trim();
+      if(!v){toast('先写点计划内容');return;}
+      const k=ymd();
+      plans[k]=plans[k]||[];
+      plans[k].push({id:Date.now().toString(),text:v,done:false});
+      localStorage.setItem('wb_plans',JSON.stringify(plans));
+      render();
+    };
+    addBtn.onclick=doAdd;
+    planInput.onkeydown=e=>{if(e.key==='Enter')doAdd();};
+  }
+  // 每日计划：勾选 / 删除
+  c.querySelectorAll('.plan-item').forEach(el=>{
+    const pid=el.dataset.pid;
+    const cb=el.querySelector('input');
+    if(cb) cb.onchange=e=>{
+      const item=(plans[ymd()]||[]).find(x=>x.id===pid);
+      if(item){item.done=e.target.checked;localStorage.setItem('wb_plans',JSON.stringify(plans));render();}
+    };
+    const del=el.querySelector('.del');
+    if(del) del.onclick=()=>{
+      plans[ymd()]=(plans[ymd()]||[]).filter(x=>x.id!==pid);
+      localStorage.setItem('wb_plans',JSON.stringify(plans));
+      render();
+    };
+  });
+
+  bindResEvents(document.getElementById('home-res'),'wb_res_home',HOME_RES);
+
+  const eb=document.getElementById('export-btn');
+  if(eb)eb.onclick=()=>exportData();
+  const ib=document.getElementById('import-btn');
+  const fi=document.getElementById('import-file');
+  if(ib&&fi){
+    ib.onclick=()=>fi.click();
+    fi.onchange=()=>{if(fi.files&&fi.files[0])importData(fi.files[0]);fi.value='';};
+  }
+}
+
+/* ---------- 视图：模块 ---------- */
+let current=null;
+function showModule(id){
+  current=id;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.id===id));
+  const m=MODULES[id];
+  const resHtml=resBlockHtml('wb_res_'+id,m.resources);
+  const c=document.getElementById('content');
+  c.innerHTML=`
+    <div class="card">
+      <h2>${m.icon} ${m.name}</h2>
+      <div class="sub">${m.intro}</div>
+      ${resHtml}
+    </div>
+
+    <div class="card">
+      <h2>📚 我的知识库</h2>
+      <div class="sub">笔记、摘抄、踩坑、灵感都存这里（可粘贴 PPT 文字和图片）；AI 会基于它帮你总结、出题、定计划。</div>
+      ${kbHtml(id)}
+    </div>
+
+    <div class="card">
+      <h2>🤖 AI 助手</h2>
+      <div class="sub">基于本板块知识库 + 资源链接回答（DeepSeek）· 对话与 Key 只存本机浏览器</div>
+      ${aiHtml(id)}
+    </div>
+
+    <div class="row" style="justify-content:center">
+      <button class="btn ghost" onclick="showHome()">← 返回首页</button>
+      <button class="btn ghost" onclick="copyMD('${id}')">📋 复制 Markdown（飞书直粘）</button>
+    </div>
+  `;
+  bindResEvents(c.querySelector('.res-add').parentElement,'wb_res_'+id,m.resources);
+  bindKB(c,id);
+  bindAI(c,id);
+}
+
+/* ---------- 复制 Markdown ---------- */
+function copyMD(id){
+  const m=MODULES[id];
+  const t=ymd();
+  const today=checkin[t]||{};
+  let s=`# ${m.icon} ${m.name} · 工作台记录\n`;
+  s+=`> 日期：${t} ｜ 模式：${mode==='daily'?'每日重置':'累积记录'}\n\n`;
+  s+=`## 今日总打卡\n`;
+  ORDER.forEach(mid=>{ s+=`- [${today[mid]?'x':' '}] ${MODULES[mid].name}\n`; });
+  s+=`\n## 每日计划\n`;
+  const dp=(plans[t]||[]);
+  if(dp.length) dp.forEach(p=>{ s+=`- [${p.done?'x':' '}] ${p.text}\n`; });
+  else s+=`- (暂无)\n`;
+  s+=`\n## 本模块资源\n`;
+  getRes('wb_res_'+id,m.resources).forEach(r=>{
+    if(r.type==='file'){ s+=`- ${r.label}（本地文件，${r.fileSize?fmtSize(r.fileSize):''}）\n`; }
+    else if(r.url!=='#') s+=`- ${r.label}：${r.url}\n`;
+  });
+  s+=`\n## 我的知识库\n`;
+  const kb=getKB(id);
+  if(kb.length) kb.forEach(k=>{ s+=`### ${k.title}\n${kbTextForAI(k)}\n\n`; });
+  else s+=`- (暂无)\n`;
+  const box=document.getElementById('mdbox');
+  if(box){box.style.display='block';box.textContent=s;}
+  fallbackCopy(s);
+  toast('已复制 Markdown ✓ 可直接粘进飞书');
+}
+function fallbackCopy(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).catch(()=>execCopy(text));}
+  else execCopy(text);
+}
+function execCopy(text){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);
+}
+
+/* ---------- 数据导出 / 导入（换设备、换浏览器用） ---------- */
+function blobToDataURL(blob){
+  return new Promise((res,rej)=>{
+    const rd=new FileReader();
+    rd.onload=()=>res(rd.result);
+    rd.onerror=()=>rej(rd.error);
+    rd.readAsDataURL(blob);
+  });
+}
+function dataURLToBlob(url){
+  const m=url.match(/^data:([^;,]*)?(;base64)?,(.*)$/s);
+  if(!m)return Promise.reject(new Error('bad data url'));
+  const bin=atob(m[3]);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return Promise.resolve(new Blob([bytes],{type:m[1]||''}));
+}
+async function exportData(){
+  const storage={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k.indexOf('wb_')===0)storage[k]=localStorage.getItem(k);
+  }
+  const files={},fileIds=new Set();
+  for(const k of Object.keys(storage)){
+    if(k.indexOf('wb_res_')===0){
+      try{const a=JSON.parse(storage[k])||[];a.forEach(r=>{if(r.type==='file')fileIds.add(r.id);});}catch(e){}
+    }
+  }
+  for(const fid of fileIds){
+    try{
+      const blob=await idbGet(fid);
+      if(blob)files[fid]={size:blob.size,type:blob.type,dataUrl:await blobToDataURL(blob)};
+    }catch(e){}
+  }
+  const payload={app:'workbuddy',version:1,exportedAt:new Date().toISOString(),storage,files};
+  const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='workbuddy-备份-'+ymd()+'.json';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),10000);
+  toast('已导出备份 ✓（链接、知识库、对话、文件）');
+}
+function importData(file){
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const p=JSON.parse(rd.result);
+      if(p.app!=='workbuddy'){toast('这不是工作台的备份文件');return;}
+      if(!confirm('导入将覆盖当前浏览器里的工作台数据，确定继续？'))return;
+      for(const k of Object.keys(p.storage||{}))localStorage.setItem(k,p.storage[k]);
+      for(const fid of Object.keys(p.files||{})){
+        try{
+          const f=p.files[fid];
+          const blob=await dataURLToBlob(f.dataUrl);
+          await idbPut(fid,blob);
+        }catch(e){}
+      }
+      toast('导入完成 ✓ 正在刷新…');
+      setTimeout(()=>location.reload(),800);
+    }catch(e){toast('备份文件解析失败');}
+  };
+  rd.readAsText(file);
+}
+
+/* ---------- toast ---------- */
+let tt;
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1900);}
+
+/* 启动 */
+render();
+</script>
+</body>
+</html>
