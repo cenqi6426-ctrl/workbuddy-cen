@@ -137,6 +137,24 @@
   .kb-e-text{max-height:220px;overflow:auto;}
   .dragging{outline:2px dashed var(--green-soft);outline-offset:-4px;border-radius:14px;}
 
+  /* 视频卡片与播放浮层 */
+  .res-video a{padding:4px 0;gap:10px;}
+  .vcover{position:relative;width:96px;height:54px;border-radius:8px;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#cfe9d8,#a8dcc0);display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .vcover img{width:100%;height:100%;object-fit:cover;display:block;}
+  .vdur{position:absolute;right:4px;bottom:3px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:1px 5px;border-radius:5px;}
+  .vinfo{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;}
+  .vinfo .nm{font-size:13px;font-weight:700;color:var(--green-deep);line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
+  .vinfo .vmeta{font-size:11px;color:var(--text-soft);}
+  .voverlay{position:fixed;inset:0;background:rgba(24,38,30,.72);display:none;align-items:center;justify-content:center;z-index:200;padding:14px;}
+  .voverlay.show{display:flex;}
+  .vbox{width:min(92vw,860px);background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .vhead{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--green-deep);}
+  .vhead .vopen{margin-left:auto;font-size:12px;font-weight:600;color:var(--green);cursor:pointer;text-decoration:none;}
+  .vhead .vclose{cursor:pointer;color:var(--text-soft);font-size:14px;padding:2px 6px;}
+  .vhead .vclose:hover{color:#c0392b;}
+  .vframe{aspect-ratio:16/9;background:#000;}
+  .vframe iframe{width:100%;height:100%;border:none;display:block;}
+
   .note{width:100%;min-height:90px;border:1px solid #dcebe1;border-radius:12px;padding:11px;font-size:13px;font-family:inherit;resize:vertical;color:var(--text);margin-top:4px;}
   .note:focus{outline:none;border-color:var(--green-soft);}
   .btn{display:inline-block;background:var(--green);color:#fff;border:none;border-radius:12px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);margin-top:10px;}
@@ -177,6 +195,12 @@
   </main>
 </div>
 <div class="toast" id="toast"></div>
+<div class="voverlay" id="vplayer">
+  <div class="vbox">
+    <div class="vhead"><span>🎬 播放中</span><a class="vopen" id="vopen-src" href="#" target="_blank" rel="noopener">↗ 在 B 站打开</a><span class="vclose" id="vclose">✕</span></div>
+    <div class="vframe"><iframe id="vframe" src="about:blank" allowfullscreen></iframe></div>
+  </div>
+</div>
 
 <script>
 /* ---------- 模块定义（顺序固定） ---------- */
@@ -269,6 +293,77 @@ function parseRes(v){
   if(!label){try{label=new URL(url).hostname.replace(/^www\./,'');}catch(e){label=url;}}
   return {url,label};
 }
+
+/* ---------- 视频封面卡片 + 站内播放（B站 JSONP 获取元数据） ---------- */
+function getBvid(u){const m=(u||'').match(/BV[0-9A-Za-z]{8,}/);return m?m[0]:null;}
+function hostOf(u){try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return '';}}
+function fmtDur(s){
+  if(!s||isNaN(s))return '00:00';
+  s=Math.round(s);
+  const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;
+  const p=n=>String(n).padStart(2,'0');
+  return (h?h+':':'')+p(m)+':'+p(sec);
+}
+function jsonpBili(bv){
+  return new Promise((res,rej)=>{
+    const cb='__wb'+Date.now().toString(36)+Math.floor(Math.random()*1e4);
+    const s=document.createElement('script');
+    const to=setTimeout(()=>{cleanup();rej(new Error('timeout'));},10000);
+    const cleanup=()=>{delete window[cb];s.remove();clearTimeout(to);};
+    window[cb]=d=>{cleanup();res(d);};
+    s.onerror=()=>{cleanup();rej(new Error('neterr'));};
+    s.src='https://api.bilibili.com/x/web-interface/view?bvid='+bv+'&jsonp=jsonp&callback='+cb;
+    document.head.appendChild(s);
+  });
+}
+function metaCache(){try{return JSON.parse(localStorage.getItem('wb_vmeta')||'{}');}catch(e){return {};}}
+function saveMetaCache(c){localStorage.setItem('wb_vmeta',JSON.stringify(c));}
+function applyVmeta(row,info){
+  const cover=row.querySelector('.vcover');
+  if(cover&&info.pic){
+    cover.innerHTML=`<img src="${esc(info.pic)}@672w_378w_1c.webp" onerror="this.onerror=null;this.src='${esc(info.pic)}';" alt=""><span class="vdur">${fmtDur(info.duration)}</span>`;
+  }
+  const meta=row.querySelector('.vmeta');
+  if(meta)meta.textContent=(info.author?info.author+' · ':'')+fmtDur(info.duration)+' · 点击播放';
+  if(row.dataset.auto==='1'&&info.title){
+    const nm=row.querySelector('.nm');
+    if(nm)nm.textContent=info.title;
+  }
+}
+function loadVideoMetas(box){
+  box.querySelectorAll('.res-video').forEach(row=>{
+    const a=row.querySelector('a.vlink');
+    const bv=getBvid(a.href);
+    if(!bv)return;
+    const cache=metaCache();
+    if(cache[bv]&&Date.now()-cache[bv].ts<7*86400000){
+      applyVmeta(row,cache[bv]);
+      return;
+    }
+    jsonpBili(bv).then(j=>{
+      if(j.code!==0)throw 0;
+      const d=j.data;
+      const info={title:d.title,author:(d.owner&&d.owner.name)||'',duration:d.duration||0,pic:d.pic||'',ts:Date.now()};
+      cache[bv]=info;saveMetaCache(cache);
+      applyVmeta(row,info);
+    }).catch(()=>{
+      const meta=row.querySelector('.vmeta');
+      if(meta)meta.textContent='点击播放（封面加载失败）';
+    });
+  });
+}
+function openPlayer(url){
+  const bv=getBvid(url);
+  document.getElementById('vframe').src='https://player.bilibili.com/player.html?bvid='+bv+'&page=1&autoplay=0';
+  document.getElementById('vopen-src').href=url;
+  document.getElementById('vplayer').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closePlayer(){
+  document.getElementById('vplayer').classList.remove('show');
+  document.getElementById('vframe').src='about:blank';
+  document.body.style.overflow='';
+}
 function resBlockHtml(key,seed){
   const list=getRes(key,seed);
   const rows=list.length?list.map(r=>{
@@ -283,6 +378,14 @@ function resBlockHtml(key,seed){
       return `<div class="res-row hint">💬 ${esc(r.label)}（待添加链接）</div>`;
     }
     const ic=r.ic||iconFor(r.url);
+    const bv=getBvid(r.url);
+    if(bv){
+      const auto=(!r.label||r.label===hostOf(r.url))?1:0;
+      return `<div class="res-row res-video" data-id="${r.id}" data-auto="${auto}">
+        <a class="vlink" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="vcover"><span class="ic">${ic}</span></span><span class="vinfo"><span class="nm">${esc(r.label)}</span><span class="vmeta">加载封面中…</span></span></a>
+        <span class="del">✕</span>
+      </div>`;
+    }
     return `<div class="res-row" data-id="${r.id}">
       <a href="${esc(r.url)}" target="_blank" rel="noopener"><span class="ic">${ic}</span><span class="nm">${esc(r.label)}</span><small>打开</small></a>
       <span class="del">✕</span>
@@ -343,6 +446,8 @@ function bindResEvents(box,key,seed){
     const a=row.querySelector('a');
     if(row.querySelector('.fopen')){
       a.onclick=e=>{e.preventDefault();openFile(id,key,seed);};
+    }else if(row.classList.contains('res-video')){
+      a.onclick=e=>{e.preventDefault();openPlayer(a.href);};
     }
     const lab=row.querySelector('.nm');
     lab.title='双击改名';
@@ -361,6 +466,7 @@ function bindResEvents(box,key,seed){
       inp.onblur=save;
     };
   });
+  loadVideoMetas(box);
 }
 
 /* ---------- 本地文件库（IndexedDB）：资源区可粘贴 / 拖入 PPT、PDF 等文件 ---------- */
@@ -1049,6 +1155,9 @@ let tt;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),1900);}
 
 /* 启动 */
+document.getElementById('vclose').onclick=closePlayer;
+document.getElementById('vplayer').addEventListener('click',e=>{if(e.target.id==='vplayer')closePlayer();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePlayer();});
 render();
 </script>
 </body>
