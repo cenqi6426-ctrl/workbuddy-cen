@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>陈粒 — 以歌为笔</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23000'/><text x='50' y='65' font-size='40' font-family='Georgia' font-style='italic' fill='%23fff' text-anchor='middle'>陈</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Noto+Serif+SC:wght@400;600;900&display=swap">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --text-dim: rgba(255, 255, 255, 0.35);
+}
+
+html {
+  scroll-behavior: smooth;
+  background: #140a0f;
+}
+
+body {
+  background:
+    radial-gradient(1200px 800px at 50% -10%, rgba(217, 138, 106, 0.22), transparent 60%),
+    radial-gradient(900px 650px at 88% 38%, rgba(130, 100, 190, 0.16), transparent 62%),
+    radial-gradient(800px 700px at 10% 80%, rgba(70, 120, 160, 0.14), transparent 60%),
+    linear-gradient(180deg, #140a0f 0%, #121018 55%, #0f0c16 100%);
+  color: var(--text);
+  font-family: "Instrument Serif", "Noto Serif SC", Georgia, serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+}
+
+/* ===== 液体玻璃 ===== */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(255, 255, 255, 0.15) 20%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 60%,
+    rgba(255, 255, 255, 0.15) 80%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ===== Hero 全屏 ===== */
+.hero {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.hero-video.fade-in {
+  opacity: 0.65;
+}
+
+.hero-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10,5,8,0.25) 0%,
+    rgba(10,5,8,0.45) 50%,
+    rgba(15,8,14,0.7) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* 导航 */
+.nav {
+  position: relative;
+  z-index: 10;
+  padding: 24px 32px;
+}
+
+.nav-pill {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 28px;
+  border-radius: 999px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.nav-logo-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #d98a6a, #c96a4a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  margin-left: 40px;
+  font-size: 15px;
+}
+
+.nav-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: #fff;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 15px;
+}
+
+.nav-btn {
+  padding: 8px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.nav-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+/* Hero 内容 */
+.hero-content {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.hero-title {
+  font-size: clamp(4rem, 12vw, 10rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  font-weight: 400;
+  will-change: transform;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+}
+
+.hero-subtitle {
+  margin-top: 32px;
+  font-size: 18px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+/* 邮箱框 */
+.email-box {
+  max-width: 520px;
+  width: 100%;
+  margin-top: 48px;
+  padding: 6px 6px 6px 24px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.email-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+.email-box input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.email-submit {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+
+.email-submit:hover {
+  transform: scale(1.08);
+}
+
+.hero-desc {
+  margin-top: 28px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-muted);
+  max-width: 480px;
+}
+
+.hero-cta {
+  margin-top: 36px;
+  padding: 14px 40px;
+  border-radius: 999px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hero-cta:hover {
+  background: rgba(255,255,255,0.08);
+  transform: scale(1.03);
+}
+
+/* 社交 */
+.hero-social {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding-bottom: 48px;
+}
+
+.social-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.3s;
+}
+
+.social-btn:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-2px);
+}
+
+.social-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===== 通用区块 ===== */
+.section {
+  background: transparent;
+  padding: 120px 24px;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* 区块背景视频（创意融合） */
+.section-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 2s ease;
+  z-index: -2;
+}
+
+.section-video.visible {
+  opacity: 0.62;
+}
+
+.section-video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(10,5,8,0.3) 0%,
+    rgba(12,8,16,0.42) 50%,
+    rgba(15,8,14,0.52) 100%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+.section-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+
+.section-label.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-title {
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: 48px;
+  font-weight: 400;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease 0.1s;
+}
+
+.section-title.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-title em {
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ===== 关于我 ===== */
+.about {
+  background: radial-gradient(ellipse at top, rgba(217, 138, 106, 0.05) 0%, transparent 60%);
+}
+
+.about-text {
+  font-size: 18px;
+  line-height: 2;
+  color: rgba(255,255,255,0.7);
+  max-width: 700px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease 0.2s;
+}
+
+.about-text.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.about-text + .about-text {
+  margin-top: 24px;
+}
+
+.about-sign {
+  margin-top: 40px;
+  font-size: 20px;
+  font-style: italic;
+  color: rgba(217, 138, 106, 0.9);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease 0.3s;
+}
+
+.about-sign.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== 荣誉 ===== */
+.honor-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.honor-card {
+  padding: 32px;
+  border-radius: 20px;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.7s ease;
+  cursor: pointer;
+}
+
+.honor-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.honor-card:nth-child(2).visible { transition-delay: 0.1s; }
+.honor-card:nth-child(3).visible { transition-delay: 0.2s; }
+.honor-card:nth-child(4).visible { transition-delay: 0.3s; }
+
+.honor-card:hover {
+  transform: translateY(-4px);
+}
+
+.honor-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  font-style: italic;
+  color: rgba(217, 138, 106, 0.9);
+}
+
+.honor-title {
+  font-size: 20px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.honor-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ===== 作品 ===== */
+.works {
+  background: radial-gradient(ellipse at center, rgba(217, 138, 106, 0.03) 0%, transparent 70%);
+}
+
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.song-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.song-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.song-item:hover {
+  padding-left: 20px;
+}
+
+.song-num {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+.song-name {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.song-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: right;
+}
+
+.song-play {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 24px;
+  transition: all 0.3s;
+}
+
+.song-item:hover .song-play {
+  background: rgba(217, 138, 106, 0.9);
+}
+
+.song-item:hover .song-play svg {
+  fill: #000;
+}
+
+/* ===== 联系 ===== */
+.contact {
+  text-align: center;
+}
+
+.contact-info {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  margin-top: 48px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease 0.2s;
+}
+
+.contact-info.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.contact-item {
+  text-align: center;
+}
+
+.contact-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.contact-value {
+  font-size: 18px;
+  color: #fff;
+}
+
+/* 底部 */
+.footer {
+  background: transparent;
+  padding: 60px 24px 40px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+  position: relative;
+  z-index: 2;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  .nav { padding: 16px; }
+  .nav-links { display: none; }
+  .hero-title { white-space: normal; line-height: 1.1; }
+  .honor-list { grid-template-columns: 1fr; }
+  .song-item { grid-template-columns: 50px 1fr; }
+  .song-desc { display: none; }
+  .song-name { font-size: 20px; }
+  .contact-info { gap: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <video class="hero-video" id="heroVideo" muted autoplay loop playsinline preload="auto">
+    <source src="chenli-assets/hero.mp4" type="video/mp4">
+  </video>
+  <div class="hero-overlay"></div>
+
+  <!-- 导航 -->
+  <nav class="nav">
+    <div class="nav-pill liquid-glass">
+      <div class="nav-left">
+        <div class="nav-logo-icon">陈</div>
+        <span>陈粒</span>
+        <div class="nav-links">
+          <a href="#about">关于</a>
+          <a href="#honors">荣誉</a>
+          <a href="#works">作品</a>
+          <a href="#contact">联系</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <span class="nav-btn" onclick="showToast('订阅新作品')">订阅</span>
+        <div class="nav-btn liquid-glass" onclick="showToast('登录演示')">登录</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero 内容 -->
+  <div class="hero-content">
+    <h1 class="hero-title">以歌为笔<br><em>书写人间</em></h1>
+    <p class="hero-subtitle">独立音乐人 · 民谣 / 流行 / 古风</p>
+
+    <div class="email-box liquid-glass">
+      <input type="email" placeholder="输入邮箱订阅新作品">
+      <button class="email-submit" onclick="showToast('订阅成功')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="hero-desc">
+      用细腻的歌词、独特的嗓音诠释人间百态，用音乐传递情绪与故事。
+    </p>
+
+    <div class="hero-cta liquid-glass" onclick="showToast('展开音乐宣言')">
+      音乐宣言
+    </div>
+  </div>
+
+  <!-- 社交图标 -->
+  <div class="hero-social">
+    <div class="social-btn liquid-glass" onclick="showToast('网易云音乐')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9 18V5l12-2v13" />
+        <circle cx="6" cy="18" r="3" />
+        <circle cx="18" cy="16" r="3" />
+      </svg>
+    </div>
+    <div class="social-btn liquid-glass" onclick="showToast('微博')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z" />
+      </svg>
+    </div>
+    <div class="social-btn liquid-glass" onclick="showToast('Instagram')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 关于我 ===== -->
+<section class="section about" id="about">
+  <video class="section-video" muted loop playsinline preload="auto">
+    <source src="chenli-assets/about.mp4" type="video/mp4">
+  </video>
+  <div class="section-video-overlay"></div>
+  <div class="section-inner">
+    <div class="section-label">About</div>
+    <h2 class="section-title">
+      用音乐<em>记录</em>人间烟火，<br>
+      用歌声<em>诠释</em>温柔与坦荡。
+    </h2>
+    <p class="about-text">
+      大家好！我是陈粒，一名专注音乐创作与演唱的独立音乐人，深耕华语原创音乐领域多年，始终坚持做有态度、有温度的音乐作品。
+    </p>
+    <p class="about-text">
+      我擅长民谣、流行、古风等多种音乐曲风，精通词曲创作、歌曲演唱与编曲打磨，擅长用细腻的歌词、独特的嗓音诠释人间百态，用音乐传递情绪与故事。
+    </p>
+    <p class="about-text">
+      生活中热爱创作、阅读与旅行，擅长从生活烟火、山河风月中汲取创作灵感，始终保持纯粹的音乐初心。
+    </p>
+    <p class="about-sign">个性签名：以歌为笔，书写人间温柔与坦荡</p>
+  </div>
+</section>
+
+<!-- ===== 荣誉 ===== -->
+<section class="section" id="honors">
+  <video class="section-video" muted loop playsinline preload="auto">
+    <source src="chenli-assets/honors.mp4" type="video/mp4">
+  </video>
+  <div class="section-video-overlay"></div>
+  <div class="section-inner">
+    <div class="section-label">Honors</div>
+    <h2 class="section-title">音乐<em>荣誉</em>与成就</h2>
+    <div class="honor-list">
+      <div class="honor-card liquid-glass" onclick="showToast('华语金曲奖')">
+        <div class="honor-icon">✦</div>
+        <div class="honor-title">华语金曲奖</div>
+        <div class="honor-desc">年度最佳民谣艺人，获华语乐坛权威奖项认可</div>
+      </div>
+      <div class="honor-card liquid-glass" onclick="showToast('热门单曲奖')">
+        <div class="honor-icon">♪</div>
+        <div class="honor-title">热门单曲奖</div>
+        <div class="honor-desc">多项原创单曲登顶华语音乐榜单，斩获年度热门单曲奖项</div>
+      </div>
+      <div class="honor-card liquid-glass" onclick="showToast('巡回演唱会')">
+        <div class="honor-icon">◉</div>
+        <div class="honor-title">全国巡回演唱会</div>
+        <div class="honor-desc">成功举办多场个人全国巡回演唱会，口碑与热度双丰收</div>
+      </div>
+      <div class="honor-card liquid-glass" onclick="showToast('经典民谣合集')">
+        <div class="honor-icon">✧</div>
+        <div class="honor-title">经典民谣合集</div>
+        <div class="honor-desc">作品常年入选华语经典民谣合集，深受大众喜爱</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 作品 ===== -->
+<section class="section works" id="works">
+  <video class="section-video" muted loop playsinline preload="auto">
+    <source src="chenli-assets/works.mp4" type="video/mp4">
+  </video>
+  <div class="section-video-overlay"></div>
+  <div class="section-inner">
+    <div class="section-label">Discography</div>
+    <h2 class="section-title">代表<em>作品</em></h2>
+    <div class="song-list">
+      <div class="song-item" onclick="showToast('播放：奇妙能力歌')">
+        <span class="song-num">01</span>
+        <span class="song-name">奇妙能力歌</span>
+        <span class="song-desc">经典原创民谣单曲</span>
+        <span class="song-play liquid-glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+      </div>
+      <div class="song-item" onclick="showToast('播放：小半')">
+        <span class="song-num">02</span>
+        <span class="song-name">小半</span>
+        <span class="song-desc">爆款流行单曲，曲风细腻治愈</span>
+        <span class="song-play liquid-glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+      </div>
+      <div class="song-item" onclick="showToast('播放：历历万乡')">
+        <span class="song-num">03</span>
+        <span class="song-name">历历万乡</span>
+        <span class="song-desc">古风民谣代表作，氛围感十足</span>
+        <span class="song-play liquid-glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+      </div>
+      <div class="song-item" onclick="showToast('播放：光')">
+        <span class="song-num">04</span>
+        <span class="song-name">光</span>
+        <span class="song-desc">治愈系原创单曲，传递温暖力量</span>
+        <span class="song-play liquid-glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 联系 ===== -->
+<section class="section contact" id="contact">
+  <video class="section-video" muted loop playsinline preload="auto">
+    <source src="chenli-assets/works.mp4" type="video/mp4">
+  </video>
+  <div class="section-video-overlay"></div>
+  <div class="section-inner">
+    <div class="section-label">Contact</div>
+    <h2 class="section-title">联系<em>我</em></h2>
+    <div class="contact-info">
+      <div class="contact-item">
+        <div class="contact-label">Email</div>
+        <div class="contact-value">chenli_music@163.com</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">微博</div>
+        <div class="contact-value">@陈粒_</div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-label">工作室</div>
+        <div class="contact-value">ChenLi 音乐工作室</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 底部 -->
+<footer class="footer">
+  © 2026 陈粒个人音乐主页 · 保留所有权利
+</footer>
+
+<script>
+// ===== 视频淡入 =====
+const heroVideo = document.getElementById('heroVideo');
+heroVideo.addEventListener('canplay', () => {
+  heroVideo.play();
+  heroVideo.classList.add('fade-in');
+});
+
+// ===== 鼠标视差 + 滚动 3D =====
+const heroContent = document.querySelector('.hero-content');
+const heroTitle = document.querySelector('.hero-title');
+
+let mouseX = 0, mouseY = 0;
+let currentX = 0, currentY = 0;
+let scrollY = 0;
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = (e.clientX / window.innerWidth - 0.5) * 20;
+  mouseY = (e.clientY / window.innerHeight - 0.5) * 15;
+});
+
+window.addEventListener('scroll', () => {
+  scrollY = window.scrollY;
+});
+
+function parallaxLoop() {
+  currentX += (mouseX - currentX) * 0.05;
+  currentY += (mouseY - currentY) * 0.05;
+
+  const scrollProgress = Math.min(scrollY / window.innerHeight, 1);
+
+  if (heroContent) {
+    heroContent.style.transform = `
+      translate3d(${currentX}px, ${currentY - scrollProgress * 100}px, 0)
+      rotateX(${currentY * 0.05}deg)
+      rotateY(${currentX * 0.05}deg)
+      scale(${1 - scrollProgress * 0.1})
+    `;
+  }
+
+  if (heroTitle) {
+    heroTitle.style.transform = `
+      translate3d(${currentX * 1.5}px, ${currentY * 1.5}px, 0)
+    `;
+  }
+
+  if (heroVideo) {
+    heroVideo.style.transform = `scale(${1 + scrollProgress * 0.1})`;
+  }
+
+  requestAnimationFrame(parallaxLoop);
+}
+parallaxLoop();
+
+// ===== 区块背景视频：滚动到哪个就淡入哪个 =====
+const sectionVideos = document.querySelectorAll('.section-video');
+
+sectionVideos.forEach(video => {
+  const section = video.parentElement;
+  
+  const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        // 播放当前区块的视频
+        video.play();
+        video.classList.add('visible');
+        // 淡出其他视频
+        sectionVideos.forEach(v => {
+          if (v !== video) {
+            v.classList.remove('visible');
+          }
+        });
+      }
+    });
+  }, { threshold: 0.2 });
+  
+  videoObserver.observe(section);
+});
+
+// ===== 滚动触发动画 =====
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15, rootMargin: '-80px' });
+
+document.querySelectorAll(
+  '.section-label, .section-title, .about-text, .about-sign, ' +
+  '.honor-card, .song-item, .contact-info'
+).forEach(el => observer.observe(el));
+
+// ===== Toast =====
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(217, 138, 106, 0.9);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 999px;
+    font-size: 14px;
+    z-index: 999;
+    backdrop-filter: blur(10px);
+    transition: opacity 0.3s;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 1500);
+}
+</script>
+
+</body>
+</html>
